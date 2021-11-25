@@ -20,7 +20,23 @@ const moviesController = {
                 res.render('moviesList.ejs', {movies})
             })
     },
-    'detail': (req, res) => {
+    'detail': async  (req, res) => {
+        try{
+            let pelicula = await db.Movie.findOne({
+                where: {
+                  id: +req.params.id,
+                },
+                include: [
+                  { association: "genre" }
+                ],
+              });
+              res.render('moviesDetail.ejs', {
+                  movie: pelicula
+                });
+        }catch(error){
+            console.log(error)
+        }
+        
         db.Movie.findByPk(req.params.id)
             .then(movie => {
                 res.render('moviesDetail.ejs', {movie});
@@ -79,7 +95,14 @@ const moviesController = {
     edit: async (req, res) =>{
         try{
             let genres = await db.Genre.findAll();
-            let pelicula = await db.Movie.findByPk(+req.params.id);
+            let pelicula = await db.Movie.findOne({
+                where: {
+                  id: +req.params.id,
+                },
+                include: [
+                  { association: "genre" }
+                ],
+              });
             return res.render("moviesEdit",{
                 Movie: pelicula,
                 allGenres : genres
@@ -97,6 +120,7 @@ const moviesController = {
                 length: req.body.length,
                 awards: req.body.awards,
                 release_date: req.body.release_date,
+                genre_id : req.body.genre_id
               },
               {
                 where: {
